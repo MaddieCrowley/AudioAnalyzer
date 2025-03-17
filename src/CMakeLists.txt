@@ -1,16 +1,22 @@
- project(AudioAnalyzer VERSION 0.0.1 LANGUAGES CXX)
+cmake_minimum_required(VERSION 3.30)
+
+project(AudioAnalyzer VERSION 0.0.1 LANGUAGES CXX)
 
  set(CMAKE_CXX_STANDARD 17)
  set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
+IF(WIN32)
+    set(SDL3_DIR "C:/msys64/ucrt64/lib/cmake/SDL3")
+ENDIF ()
+
  option(X11 "X11 native version" OFF)
  option(SDL3 "SDL3 version" ON)
 
 
- option(PULSE "pulse-audio native support" ON)
- option(RTAUDIO "RTAUDIO version" OFF)
+ option(PULSE "pulse-audio native support" OFF)
+ option(RTAUDIO "RTAUDIO version" ON)
 
  if (X11)
      find_package(X11 REQUIRED)
