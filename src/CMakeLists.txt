@@ -7,9 +7,10 @@ project(AudioAnalyzer VERSION 0.0.1 LANGUAGES CXX)
 
  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-IF(WIN32)
+#[[IF(WIN32)
     set(SDL3_DIR "C:/msys64/ucrt64/lib/cmake/SDL3")
-ENDIF ()
+    set(RT_DIR "C:/msys64/ucrt64/include/rtaudio")
+ENDIF ()]]
 
  option(X11 "X11 native version" OFF)
  option(SDL3 "SDL3 version" ON)
@@ -38,15 +39,16 @@ ENDIF ()
      )
      list(APPEND EXTRA_LIBS pulse-simple)
      list(APPEND audio/pulse.cpp)
-     add_compile_definitions(RTAUDIO)
+     add_compile_definitions(PULSE_AUDIO_SUPPORT_ENABLE)
  elseif (RTAUDIO)
      #FIND RT AUDIO
      find_library(RTAUDIO_LIBRARY
-             NAMES rtaudio
+             NAMES RtAudio
+             #HINTS ${RT_DIR}
      )
-     list(APPEND EXTRA_LIBS rtaudio)
+     list(APPEND EXTRA_LIBS RtAudio)
      list(APPEND EXTRA_SOURCES audio/rt.cpp)
-     add_compile_definitions(RTAUDIO)
+     add_compile_definitions(RTAUDIO_SUPPORT_ENABLE)
  endif ()
 
  add_executable(AudioAnalyzer main.cpp ${EXTRA_SOURCES}
