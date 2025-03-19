@@ -13,6 +13,19 @@
 #endif
 
 audio a;
-
+gui winXY(gui::L, 400, 400,
+          "L Fast",read::data,AUDIO_SIZE);
+gui winL(gui::L, 800, 600,
+    "L medium",read::data,AUDIO_SIZE*BUFFER_SIZE/4);
+gui winLong(gui::L, 800, 600,
+    "L slow",read::data,AUDIO_SIZE*BUFFER_SIZE);
 int main (int argc, char *argv[]) {
+    while (!winXY.gDone) {
+        winXY.loop();
+        winXY.changeDataPtr(read::data+(AUDIO_SIZE*read::frameNum));
+        winL.loop();
+        winL.changeDataPtr(read::data+(AUDIO_SIZE*read::frameNum/4));//TODO weird behavior (due to not finishing going through points before buffer updates?)
+        winLong.loop();
+    }
+    return 0;
 }

@@ -13,15 +13,18 @@ class gui {
 public:
     enum winType{All,XY,L,R};
     explicit gui(winType windowT = All, int width = 1920, int height = 1080,
-        const char* title="Audio Analyzer", int16_t*data,int dataSize);
+        const char* title="Audio Analyzer", int16_t*data = nullptr,int dataSize=AUDIO_SIZE);
     ~gui();
     void changeDataPtr(int16_t*data);
+    void loop();
     int gDone;
 
 private:
     bool update();
-    void drawXY();//Relies on the fact that the data buffer is a static memory location
-    void drawLine();
+    void drawXY(SDL_Rect&,SDL_Point&);//Relies on the fact that the data buffer is a static memory location
+    void drawLineL(SDL_Rect&,SDL_Point&);
+    void drawLineR(SDL_Rect&,SDL_Point&);
+    void render();
     struct guiRect{SDL_Rect rect;SDL_Point start;};
 
     const int WINDOW_WIDTH;

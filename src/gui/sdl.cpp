@@ -15,7 +15,7 @@ gui::gui(winType windowT, int width, int height, const char* title, int16_t*data
                                     WINDOW_WIDTH, WINDOW_HEIGHT);
 
 
-    if(windowType==All)
+    if(windowType==All) //TODO Clean this up, must be a way
     {
         renLeft.rect.x=0; renLeft.rect.y=0;
         renLeft.rect.w=WINDOW_WIDTH-400; renLeft.rect.h=WINDOW_HEIGHT/3;
@@ -83,16 +83,69 @@ bool gui::update()
     return true;
 }
 
-void gui::drawXY() {
-    for (int i = 0; i < dataSize; i++) {
-        SDL_RenderPresent(gSDLRenderer,scale(data[2*i]));
+void gui::loop() {
+    if (!update())
+        gDone=1;
+    else
+        render();
+}
+
+
+void gui::render() {
+    //CLEAR BACKGROUND AND SET COLOR
+    SDL_SetRenderDrawColor(gSDLRenderer, 0x00, 0x00, 0x00, 0xFF);
+    SDL_RenderClear(gSDLRenderer);
+    SDL_SetRenderDrawColor(gSDLRenderer, 0xFF, 0xFF, 0xFF, 0xFF);
+
+    if(windowType==XY)
+        drawXY(WINDOW.rect,WINDOW.start);
+    else if(windowType==L)
+        drawLineL(WINDOW.rect,WINDOW.start);
+    else if(windowType==R)
+        drawLineR(WINDOW.rect,WINDOW.start);
+    else if(windowType==All) {
+        drawXY(renXY.rect,renXY.start);
+        drawLineL(renLeft.rect,renLeft.start);
+        drawLineR(renRight.rect,renRight.start);
+    }
+
+}
+
+void gui::drawXY(SDL_Rect&region,SDL_Point&start) {
+    for (int i = 0; i < dataSize/2; i++) {//BUG div 4 b/c 16 to 32bit int (2x) and L+R (2x) (?)
+        SDL_RenderPoint(gSDLRenderer,
+            scale(data[2*i],start.x,region.w,2*INT16_MAX), //2x b/c center aligned
+            scale(data[2*i+1],start.y,region.h,2*INT16_MAX)
+            );
+    }
+}
+
+void gui::drawLineL(SDL_Rect&region,SDL_Point&start) {
+    for (int i = 1; i < dataSize/2; i++) {
+        SDL_RenderLine(gSDLRenderer,
+            scale(i-1,start.x,region.w,dataSize/2),
+            scale(data[2*(i-1)],start.y,region.h,2*INT16_MAX),
+            scale(i,start.x,region.w,dataSize/2),
+            scale(data[2*i],start.y,region.h,2*INT16_MAX)
+            );
+    }
+}
+void gui::drawLineR(SDL_Rect&region,SDL_Point&start) {
+    for (int i = 1; i < dataSize/2; i++) {
+        SDL_RenderLine(gSDLRenderer,
+            scale(i-1,start.x,region.w,dataSize/2),
+            scale(data[2*(i-1)+1],start.y,region.h,2*INT16_MAX),
+            scale(i,start.x,region.w,dataSize/2),
+            scale(data[2*i+1],start.y,region.h,2*INT16_MAX)
+            );
     }
 }
 
 void gui::changeDataPtr(int16_t*dataNew) {
     data=dataNew;
 }
-
+//TODO instead of calculating length/max every time, calculate once and multiply (faster?)
+// INLINE FASTER?
 float gui::scale(int x, int start, int length, int max) {
     return float(start)+float(length)*float(x)/float(max);
 }

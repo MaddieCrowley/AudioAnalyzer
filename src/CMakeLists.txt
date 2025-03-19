@@ -46,7 +46,7 @@ ENDIF ()]]
              NAMES RtAudio
              #HINTS ${RT_DIR}
      )
-     list(APPEND EXTRA_LIBS RtAudio)
+     list(APPEND EXTRA_LIBS rtaudio)
      list(APPEND EXTRA_SOURCES audio/rt.cpp)
      add_compile_definitions(RTAUDIO_SUPPORT_ENABLE)
  endif ()

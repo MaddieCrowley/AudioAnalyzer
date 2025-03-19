@@ -22,6 +22,6 @@ int read::read(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames
                double streamTime, RtAudioStreamStatus status, void *userData) {
     frameNum++;
     if (frameNum == BUFFER_SIZE) {frameNum = 0;}
-    memcpy(data+frameNum*AUDIO_SIZE,inputBuffer,AUDIO_SIZE);
+    memcpy(data+frameNum*AUDIO_SIZE,inputBuffer,AUDIO_SIZE*sizeof(int16_t));
     return 0;
 }
