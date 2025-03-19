@@ -13,7 +13,7 @@ class gui {
 public:
     enum winType{All,XY,L,R};
     explicit gui(winType windowT = All, int width = 1920, int height = 1080,
-        const char* title="Audio Analyzer", int16_t*data = nullptr,int dataSize=AUDIO_SIZE);
+        const char* title="Audio Analyzer", int16_t*data = nullptr,int dataSize=AUDIO_SIZE,int stepSize=1);
     ~gui();
     void changeDataPtr(int16_t*data);
     void loop();
@@ -31,6 +31,7 @@ private:
     const int WINDOW_HEIGHT;
     winType windowType;
     const char* title;
+    const int m_stepSize;
 
     float scale(int x,int start,int length,int max);
 

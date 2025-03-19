@@ -1,9 +1,12 @@
 #include "sdl.h"
 
+#include <iostream>
+#include <ostream>
 
-gui::gui(winType windowT, int width, int height, const char* title, int16_t*data,int dataSize)
+
+gui::gui(winType windowT, int width, int height, const char* title, int16_t*data,int dataSize,int stepSize)
     : WINDOW_WIDTH(width),WINDOW_HEIGHT(height),windowType(windowT),
-      title(title),data(data),dataSize(dataSize){
+      title(title),data(data),dataSize(dataSize),m_stepSize(stepSize){
 
     gFrameBuffer = new int[WINDOW_WIDTH * WINDOW_HEIGHT];
     //int gFrameBuffer[WINDOW_WIDTH*WINDOW_HEIGHT] = {};
@@ -86,10 +89,18 @@ bool gui::update() const {
 }
 
 void gui::loop() {
+#ifdef FRAME_RATE
+    uint32_t start = SDL_GetTicks();
+#endif
     if (!update())
         gDone=1;
     else
         render();
+#ifdef FRAME_RATE
+    uint32_t end = SDL_GetTicks();
+    float delta = (float)(end-start)/1000.0f;
+    std::cout << float(1/delta) << "\n";
+#endif
 }
 
 
@@ -114,7 +125,7 @@ void gui::render() {
 }
 
 void gui::drawXY(SDL_Rect&region,SDL_Point&start) { //Draws from member local pointer data (no copies)
-    for (int i = 0; i < dataSize/2; i++) {
+    for (int i = 0; i < dataSize/2; i+=m_stepSize) {
         SDL_RenderPoint(gSDLRenderer,
             scale(data[2*i],start.x,region.w,2*INT16_MAX), //2x b/c center aligned
             scale(data[2*i+1],start.y,region.h,2*INT16_MAX)
@@ -123,20 +134,20 @@ void gui::drawXY(SDL_Rect&region,SDL_Point&start) { //Draws from member local po
 }
 
 void gui::drawLineL(SDL_Rect&region,SDL_Point&start) {
-    for (int i = 1; i < dataSize/2; i++) {
+    for (int i = m_stepSize; i < dataSize/2; i+=m_stepSize) {
         SDL_RenderLine(gSDLRenderer,
-            scale(i-1,start.x,region.w,dataSize/2),
-            scale(data[2*(i-1)],start.y,region.h,2*INT16_MAX),
+            scale(i-m_stepSize,start.x,region.w,dataSize/2),
+            scale(data[2*(i-m_stepSize)],start.y,region.h,2*INT16_MAX),
             scale(i,start.x,region.w,dataSize/2),
             scale(data[2*i],start.y,region.h,2*INT16_MAX)
             );
     }
 }
 void gui::drawLineR(SDL_Rect&region,SDL_Point&start) {
-    for (int i = 1; i < dataSize/2; i++) {
+    for (int i = m_stepSize; i < dataSize/2; i+=m_stepSize) {
         SDL_RenderLine(gSDLRenderer,
-            scale(i-1,start.x,region.w,dataSize/2),
-            scale(data[2*(i-1)+1],start.y,region.h,2*INT16_MAX),
+            scale(i-m_stepSize,start.x,region.w,dataSize/2),
+            scale(data[2*(i-m_stepSize)+1],start.y,region.h,2*INT16_MAX),
             scale(i,start.x,region.w,dataSize/2),
             scale(data[2*i+1],start.y,region.h,2*INT16_MAX)
             );

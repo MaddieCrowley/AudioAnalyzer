@@ -21,7 +21,9 @@ audio::~audio() {
 int audiodata::read(void *outputBuffer, void *inputBuffer, unsigned int nBufferFrames,
                double streamTime, RtAudioStreamStatus status, void *userData) {
     frameNum++;
-    if (frameNum == BUFFER_SIZE) {frameNum = 0;}
+    if (frameNum == BUFFER_SIZE) {
+        frameNum = 0;
+    }
     memcpy(data+frameNum*AUDIO_CHANNELS*AUDIO_SIZE,inputBuffer,AUDIO_CHANNELS*AUDIO_SIZE*sizeof(int16_t));
     return 0;
 }
