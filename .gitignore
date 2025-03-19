@@ -39,3 +39,4 @@ src/cmake-build-debug/*
 .idea/*
 src/compile_commands.json
 src/.fuse_*
+/src/cmake-build-debug-coverage/*

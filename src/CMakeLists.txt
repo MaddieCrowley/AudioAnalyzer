@@ -38,8 +38,8 @@ ENDIF ()]]
              DOC "The PulseAudio library"
      )
      list(APPEND EXTRA_LIBS pulse-simple)
-     list(APPEND audio/pulse.cpp)
-     add_compile_definitions(PULSE_AUDIO_SUPPORT_ENABLE)
+     list(APPEND EXTRA_SOURCES audio/pulse.cpp)
+     add_compile_definitions(PULSEAUDIO_SUPPORT_ENABLE)
  elseif (RTAUDIO)
      #FIND RT AUDIO
      find_library(RTAUDIO_LIBRARY
@@ -51,8 +51,7 @@ ENDIF ()]]
      add_compile_definitions(RTAUDIO_SUPPORT_ENABLE)
  endif ()
 
- add_executable(AudioAnalyzer main.cpp ${EXTRA_SOURCES}
- )
+ add_executable(AudioAnalyzer main.cpp ${EXTRA_SOURCES})
 
  target_link_libraries(AudioAnalyzer
  PRIVATE ${EXTRA_LIBS})

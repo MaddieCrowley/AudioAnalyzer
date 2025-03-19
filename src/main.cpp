@@ -1,6 +1,6 @@
 #ifdef RTAUDIO_SUPPORT_ENABLE
 #include "audio/rt.h"
-//#define a.read() read::read()
+//#define a.audiodata() audiodata::audiodata()
 
 #elifdef PULSEAUDIO_SUPPORT_ENABLE
 #include "audio/pulse.h"
@@ -11,26 +11,38 @@
 #elifdef X11
 #include "gui/xwin.h"
 #endif
-#define SMALL_BUFFER 10
-audio a;
-gui winXY(gui::XY, 400, 400,
-          "XY 1 Frame",read::data,AUDIO_SIZE);
-gui winL(gui::L, 1920, 600,
-         "L 4 Frames",read::data,AUDIO_SIZE*SMALL_BUFFER);
-gui winR(gui::R, 1920, 600,
-         "R 4 Frames",read::data,AUDIO_SIZE*SMALL_BUFFER);
-gui winLong(gui::XY, 600, 600,
-            "Full buffer",read::data,AUDIO_SIZE*BUFFER_SIZE);
+#define SMALL_BUFFER 4
+#include <iostream>
+
+//TODO parallel audio sample taking and window drawing to minimize the number of audio frames dropped
+
 int main (int argc, char *argv[]) {
-    while (!winXY.gDone) {
+    audio a;
+    gui winXY(gui::L, 1920, 600,
+              "L 1/2 Frame",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE/2);
+    gui winL(gui::L, 1920, 600,
+             "L 4 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
+    gui winR(gui::R, 1920, 600,
+             "R 4 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
+    gui winLong(gui::All, 1920, 1080,
+                "Full buffer",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*BUFFER_SIZE);
+    while (!winL.gDone) {
+        #ifdef PULSEAUDIO_SUPPORT_ENABLE
+        a.read();
+        #endif
+        winXY.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum));
         winXY.loop();
-        winXY.changeDataPtr(read::data+(AUDIO_SIZE*read::frameNum));
-        winL.loop();
+        winL.loop(); //BUG TODO figure out why it stutters
         winR.loop();
-        if (read::frameNum%(SMALL_BUFFER)==0&&read::frameNum!=0) {
-            //std::cout << read::frameNum << std::endl;
-            winL.changeDataPtr(read::data+(AUDIO_SIZE*(read::frameNum-SMALL_BUFFER)));
-            winR.changeDataPtr(read::data+(AUDIO_SIZE*(read::frameNum-SMALL_BUFFER)));
+        if (audiodata::frameNum%(SMALL_BUFFER)==0) {
+            if (audiodata::frameNum==0) {
+                winL.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*(BUFFER_SIZE-SMALL_BUFFER)));
+                winR.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*(BUFFER_SIZE-SMALL_BUFFER)));
+            }
+            else {
+                winL.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum-SMALL_BUFFER)));
+                winR.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum-SMALL_BUFFER)));
+            }
         }
         winLong.loop();
     }

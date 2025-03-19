@@ -20,7 +20,7 @@ public:
     int gDone;
 
 private:
-    bool update();
+    bool update() const;
     void drawXY(SDL_Rect&,SDL_Point&);//Relies on the fact that the data buffer is a static memory location
     void drawLineL(SDL_Rect&,SDL_Point&);
     void drawLineR(SDL_Rect&,SDL_Point&);

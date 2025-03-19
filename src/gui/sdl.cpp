@@ -6,6 +6,7 @@ gui::gui(winType windowT, int width, int height, const char* title, int16_t*data
       title(title),data(data),dataSize(dataSize){
 
     gFrameBuffer = new int[WINDOW_WIDTH * WINDOW_HEIGHT];
+    //int gFrameBuffer[WINDOW_WIDTH*WINDOW_HEIGHT] = {};
     gSDLWindow = SDL_CreateWindow(title, WINDOW_WIDTH,
                                   WINDOW_HEIGHT, 0);
     gSDLRenderer = SDL_CreateRenderer(gSDLWindow, NULL);
@@ -46,6 +47,7 @@ gui::gui(winType windowT, int width, int height, const char* title, int16_t*data
 }
 
 gui::~gui() {
+    delete[] gFrameBuffer;
     //free(data);
     SDL_DestroyTexture(gSDLTexture);
     SDL_DestroyRenderer(gSDLRenderer);
@@ -53,8 +55,7 @@ gui::~gui() {
     SDL_Quit();
 }
 
-bool gui::update()
-{
+bool gui::update() const {
     SDL_Event e;
     if(SDL_PollEvent(&e))
     {
@@ -78,7 +79,8 @@ bool gui::update()
     SDL_UnlockTexture(gSDLTexture);
     SDL_RenderTexture(gSDLRenderer, gSDLTexture, NULL, NULL);
     SDL_RenderPresent(gSDLRenderer);
-    SDL_Delay(1);
+    SDL_Delay(5);
+    //saves SOOOOO much CPU usage (going from none to 5ms literally halves it) with no perceptible difference
 
     return true;
 }
@@ -111,8 +113,8 @@ void gui::render() {
 
 }
 
-void gui::drawXY(SDL_Rect&region,SDL_Point&start) {
-    for (int i = 0; i < dataSize/2; i++) {//BUG div 4 b/c 16 to 32bit int (2x) and L+R (2x) (?)
+void gui::drawXY(SDL_Rect&region,SDL_Point&start) { //Draws from member local pointer data (no copies)
+    for (int i = 0; i < dataSize/2; i++) {
         SDL_RenderPoint(gSDLRenderer,
             scale(data[2*i],start.x,region.w,2*INT16_MAX), //2x b/c center aligned
             scale(data[2*i+1],start.y,region.h,2*INT16_MAX)

@@ -15,11 +15,11 @@ public:
     audio();
     ~audio();
 };
-namespace read
+namespace audiodata
 {
     inline int frameNum;
     int read(void*outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
                   double streamTime,RtAudioStreamStatus status,void*userData);
-    inline int16_t data[AUDIO_SIZE*BUFFER_SIZE];
+    inline int16_t data[AUDIO_SIZE*BUFFER_SIZE*AUDIO_CHANNELS];
 }
 #endif //RT_H
