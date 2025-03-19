@@ -11,7 +11,7 @@
 
 class gui {
 public:
-    enum winType{All,XY,L,R};
+    enum winType{All,XY,L,R,LR};
     explicit gui(winType windowT = All, int width = 1920, int height = 1080,
         const char* title="Audio Analyzer", int16_t*data = nullptr,int dataSize=AUDIO_SIZE,int stepSize=1);
     ~gui();

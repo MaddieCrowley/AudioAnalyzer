@@ -29,6 +29,15 @@ gui::gui(winType windowT, int width, int height, const char* title, int16_t*data
         renXY.rect.w = 400; renXY.rect.h = 400;
         renXY.start.x = renXY.rect.x+200; renXY.start.y = 200;
     }
+    else if (windowType==LR) {
+        renLeft.rect.x=0; renLeft.rect.y=0;
+        renLeft.rect.w=WINDOW_WIDTH; renLeft.rect.h=WINDOW_HEIGHT/2;
+        renLeft.start.x = 0; renLeft.start.y = renLeft.rect.y+renLeft.rect.h/2;
+
+        renRight.rect.x=0; renRight.rect.y=renLeft.rect.h;
+        renRight.rect.w=WINDOW_WIDTH; renRight.rect.h=WINDOW_HEIGHT/2;
+        renRight.start.x = 0; renRight.start.y = renRight.rect.y+renRight.rect.h/2;
+    }
     else if (windowType==XY)
     {
         WINDOW.rect.x=0; WINDOW.rect.y=0;
@@ -112,6 +121,10 @@ void gui::render() {
         drawLineL(WINDOW.rect,WINDOW.start);
     else if(windowType==R)
         drawLineR(WINDOW.rect,WINDOW.start);
+    else if(windowType==LR) {
+        drawLineL(renLeft.rect,renLeft.start);
+        drawLineR(renRight.rect,renRight.start);
+    }
     else if(windowType==All) {
         drawXY(renXY.rect,renXY.start);
         drawLineL(renLeft.rect,renLeft.start);

@@ -11,7 +11,7 @@
 #elifdef X11
 #include "gui/xwin.h"
 #endif
-#define SMALL_BUFFER 4
+#define SMALL_BUFFER 10
 
 //TODO parallel audio sample taking and window drawing to minimize the number of audio frames dropped
 
@@ -20,50 +20,30 @@ int main (int argc, char *argv[]) {
     int16_t tempData[SMALL_BUFFER*AUDIO_SIZE*AUDIO_CHANNELS];
 #endif
     audio a;
-    gui winXY(gui::L, 1920, 600,
-              "L 1/2 Frame",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE);
-    gui winL(gui::L, 1920, 600,
-             "L 4 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
-    gui winR(gui::R, 1920, 600,
-             "R 4 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
-    gui winLong(gui::All, 1920, 1080,
+    gui winLRS(gui::LR, 1920, 1440/3,
+              "LR",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE);
+    gui winLRM(gui::LR, 1920, 1440/3,
+             "LR 10 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
+    // gui winR(gui::R, 1920, 1440/3,
+    //          "R 4 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
+    gui winLong(gui::All, 1920, 1440/3,
     "Full buffer",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*BUFFER_SIZE,10);
-    while (!winL.gDone) {
+    gui winXY(gui::XY, 1440/3, 1440/3,
+             "XY 10 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
+    while (!winLRS.gDone&&!winLRM.gDone&&!winXY.gDone&&!winLong.gDone) {
 #ifdef TIMING_DEBUG
         uint32_t start = SDL_GetTicks();
 #endif
 #ifdef PULSEAUDIO_SUPPORT_ENABLE
         a.read();
 #endif
-        winXY.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum));
+        winLRS.loop();
+        winLRM.loop();
         winXY.loop();
-        winL.loop();
-        winR.loop();
-//         if (audiodata::frameNum==0) {
-//             //ONE OPTION BELOW (CORRECT BUT NOT AS PRETTY)
-//             //Uses a temp variable to place last 3 frames of data and first frame of data (which has just been written in)
-//             // But is slower and doesn't look as clean
-// #ifdef CORRECT_SHORT_BUFFER_WRAP
-//             memcpy(&tempData[SMALL_BUFFER*AUDIO_SIZE*AUDIO_CHANNELS-1]-(SMALL_BUFFER-1)*AUDIO_SIZE*AUDIO_CHANNELS,
-//             &audiodata::data[BUFFER_SIZE*AUDIO_SIZE*AUDIO_CHANNELS-1]-(SMALL_BUFFER-1)*AUDIO_SIZE*AUDIO_CHANNELS,
-//                (SMALL_BUFFER-1)*AUDIO_SIZE*AUDIO_CHANNELS*sizeof(int16_t));
-//             memcpy(&tempData[0], &audiodata::data[0], AUDIO_SIZE*AUDIO_CHANNELS*sizeof(int16_t));
-//             winL.changeDataPtr(tempData);
-// #else
-//             //OTHER OPTION (prettier, but not as correct)
-//             //just uses the first 4 values of data
-//             winL.changeDataPtr(audiodata::data);
-//             winR.changeDataPtr(audiodata::data);
-// #endif
-//         }
-//         else {
-//         }
-            winL.changeDataPtr(audiodata::data+SMALL_BUFFER*(AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum/SMALL_BUFFER)));
-            winR.changeDataPtr(audiodata::data+SMALL_BUFFER*(AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum/SMALL_BUFFER)));
-        // else if (audiodata::frameNum%SMALL_BUFFER==0) {
-        //     winL.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum-SMALL_BUFFER));
-        //     winR.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum-SMALL_BUFFER));
-        // }
+        winLRS.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum));
+        //BUG Still some glitching, most visible when going from playing to pause
+        winLRM.changeDataPtr(audiodata::data+SMALL_BUFFER*AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum/SMALL_BUFFER));
+        winXY.changeDataPtr(audiodata::data+SMALL_BUFFER*AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum/SMALL_BUFFER));
         winLong.loop();
 #ifdef TIMING_DEBUG
         uint32_t end = SDL_GetTicks();
