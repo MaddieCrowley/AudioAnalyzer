@@ -33,7 +33,7 @@ private:
     const char* title;
     const int m_stepSize;
 
-    float scale(int x,int start,int length,int max);
+    static float scale(int x,int start,int length,int max);
 
     int16_t * data;
     int dataSize;

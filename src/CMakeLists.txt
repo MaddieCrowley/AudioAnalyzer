@@ -12,6 +12,12 @@ project(AudioAnalyzer VERSION 0.0.1 LANGUAGES CXX)
     set(RT_DIR "C:/msys64/ucrt64/include/rtaudio")
 ENDIF ()]]
 
+ option(LOW_POWER "Lowers the sample rate to lower cpu usage" OFF)
+if (LOW_POWER)
+    add_compile_definitions(LOW_POWER_MODE)
+endif ()
+
+#add_compile_definitions(CORRECT_SHORT_BUFFER_WRAP)
  option(X11 "X11 native version" OFF)
  option(SDL3 "SDL3 version" ON)
 

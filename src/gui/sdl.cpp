@@ -1,9 +1,5 @@
 #include "sdl.h"
 
-#include <iostream>
-#include <ostream>
-
-
 gui::gui(winType windowT, int width, int height, const char* title, int16_t*data,int dataSize,int stepSize)
     : WINDOW_WIDTH(width),WINDOW_HEIGHT(height),windowType(windowT),
       title(title),data(data),dataSize(dataSize),m_stepSize(stepSize){
@@ -12,7 +8,7 @@ gui::gui(winType windowT, int width, int height, const char* title, int16_t*data
     //int gFrameBuffer[WINDOW_WIDTH*WINDOW_HEIGHT] = {};
     gSDLWindow = SDL_CreateWindow(title, WINDOW_WIDTH,
                                   WINDOW_HEIGHT, 0);
-    gSDLRenderer = SDL_CreateRenderer(gSDLWindow, NULL);
+    gSDLRenderer = SDL_CreateRenderer(gSDLWindow, nullptr);
     gSDLTexture = SDL_CreateTexture(gSDLRenderer,
                                     SDL_PIXELFORMAT_ABGR8888,
                                     SDL_TEXTUREACCESS_STREAMING,
@@ -75,12 +71,12 @@ bool gui::update() const {
     char* pix;
     int pitch;
 
-    SDL_LockTexture(gSDLTexture, NULL, (void**)&pix, &pitch);
+    SDL_LockTexture(gSDLTexture, nullptr, (void**)&pix, &pitch);
     for(int i=0,sp=0, dp =0;i<WINDOW_HEIGHT;i++,dp+=WINDOW_WIDTH,sp+=pitch)
         memcpy(pix+sp, gFrameBuffer+dp, WINDOW_WIDTH*4);
 
     SDL_UnlockTexture(gSDLTexture);
-    SDL_RenderTexture(gSDLRenderer, gSDLTexture, NULL, NULL);
+    SDL_RenderTexture(gSDLRenderer, gSDLTexture, nullptr, nullptr);
     SDL_RenderPresent(gSDLRenderer);
     SDL_Delay(5);
     //saves SOOOOO much CPU usage (going from none to 5ms literally halves it) with no perceptible difference
