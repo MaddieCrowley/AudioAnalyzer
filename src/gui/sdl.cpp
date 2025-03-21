@@ -87,7 +87,7 @@ bool gui::update() const {
     SDL_UnlockTexture(gSDLTexture);
     SDL_RenderTexture(gSDLRenderer, gSDLTexture, nullptr, nullptr);
     SDL_RenderPresent(gSDLRenderer);
-    SDL_Delay(5);
+    //SDL_Delay(5);
     //saves SOOOOO much CPU usage (going from none to 5ms literally halves it) with no perceptible difference
 
     return true;
@@ -164,7 +164,17 @@ void gui::drawLineR(SDL_Rect&region,SDL_Point&start) {
 }
 
 void gui::changeDataPtr(int16_t*dataNew) {
-    data=dataNew;
+
+    //TODO FINISH This mess
+
+    if (dataSize>AUDIO_SIZE*AUDIO_CHANNELS) {
+        const int end = dataSize-1;
+        memcpy(data,data+AUDIO_SIZE*AUDIO_CHANNELS,(dataSize-AUDIO_SIZE*AUDIO_CHANNELS)*sizeof(int16_t));
+        memcpy(data+end-AUDIO_CHANNELS*AUDIO_SIZE,dataNew,AUDIO_SIZE*AUDIO_CHANNELS*sizeof(int16_t));
+    }
+    else {
+        data=dataNew;
+    }
 }
 //TODO instead of calculating length/max every time, calculate once and multiply (faster?)
 // INLINE FASTER?

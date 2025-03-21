@@ -15,8 +15,9 @@
 #define SMALL_BUFFER 10
 
 //TODO parallel audio sample taking and window drawing to minimize the number of audio frames dropped
-
+//TODO Check that for every frame there is one audio sample
 int main (int argc, char *argv[]) {
+    int16_t tempData[SMALL_BUFFER*AUDIO_SIZE*AUDIO_CHANNELS]={};
 #ifdef CORRECT_SHORT_BUFFER_WRAP
     int16_t tempData[SMALL_BUFFER*AUDIO_SIZE*AUDIO_CHANNELS];
 #endif
@@ -39,13 +40,29 @@ int main (int argc, char *argv[]) {
 #ifdef PULSEAUDIO_SUPPORT_ENABLE
         a.read();
 #endif
+        //BUG Still some glitching, most visible when going from playing to pause
+        //DUE TO RENDERING AND AUDIO SAMPLING NOT BEING TIED TOGETHER ???
+        //BUG need to fix rendering previous frames not future ones
+        winLRM.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*((audiodata::frameNum-(SMALL_BUFFER))/SMALL_BUFFER*SMALL_BUFFER));
+        winXY.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*((audiodata::frameNum)/SMALL_BUFFER*SMALL_BUFFER));
+        winLRS.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum));
         winLRS.loop();
         winLRM.loop();
         winXY.loop();
-        winLRS.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum));
-        //BUG Still some glitching, most visible when going from playing to pause
-        winLRM.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum/SMALL_BUFFER)*SMALL_BUFFER);
-        winXY.changeDataPtr(audiodata::data+SMALL_BUFFER*AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum/SMALL_BUFFER));
+        SDL_Delay(5);
+        // if (audiodata::frameNum==0) {
+        //
+        //     memcpy(tempData,&audiodata::data[AUDIO_CHANNELS*AUDIO_SIZE*BUFFER_SIZE]-AUDIO_CHANNELS*AUDIO_SIZE*(SMALL_BUFFER-1),
+        //         AUDIO_SIZE*AUDIO_CHANNELS*(SMALL_BUFFER-1)*sizeof(int16_t));
+        //     memcpy(&tempData[AUDIO_CHANNELS*AUDIO_SIZE*(SMALL_BUFFER-1)],&audiodata::data[0],
+        //         AUDIO_SIZE*AUDIO_CHANNELS*sizeof(int16_t));
+        //     winLRM.changeDataPtr(tempData);
+        //     winXY.changeDataPtr(tempData);
+        //     //winLRM.changeDataPtr(audiodata::data);
+        // }
+        // else {
+        // }
+
         winLong.loop();
 #ifdef TIMING_DEBUG
         uint32_t end = SDL_GetTicks();

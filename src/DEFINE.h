@@ -6,6 +6,7 @@
 #include <cstring>
 #define AUDIO_SAMPLE_FORMAT S16_LE
 #define AUDIO_SIZE 1024
+//#define AUDIO_SIZE 960
 #ifdef LOW_POWER_MODE
 #define AUDIO_SAMPLE_RATE 48000
 #else
