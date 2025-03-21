@@ -4,13 +4,18 @@ project(AudioAnalyzer VERSION 0.0.1 LANGUAGES CXX)
 
  set(CMAKE_CXX_STANDARD 17)
  set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-#[[IF(WIN32)
+add_compile_options(-Dmain=SDL_main)
+
+IF(WIN32)
     set(SDL3_DIR "C:/msys64/ucrt64/lib/cmake/SDL3")
-    set(RT_DIR "C:/msys64/ucrt64/include/rtaudio")
-ENDIF ()]]
+    set(SDL3_HINT "C:/msys64/ucrt64/include/SDL3")
+    set(RT_DIR "c:/msys64/ucrt64/include/rtaudio/")
+    include_directories(${RT_DIR})
+ENDIF ()
 
  option(LOW_POWER "Lowers the sample rate to lower cpu usage" OFF)
 if (LOW_POWER)
@@ -50,14 +55,19 @@ endif ()
      #FIND RT AUDIO
      find_library(RTAUDIO_LIBRARY
              NAMES RtAudio
-             #HINTS ${RT_DIR}
+             HINTS ${RT_DIR}
+             PATH_SUFFIXES
+             h
      )
      list(APPEND EXTRA_LIBS rtaudio)
      list(APPEND EXTRA_SOURCES audio/rt.cpp)
      add_compile_definitions(RTAUDIO_SUPPORT_ENABLE)
  endif ()
 
- add_executable(AudioAnalyzer main.cpp ${EXTRA_SOURCES})
-
+if (WIN32)
+ add_executable(AudioAnalyzer WIN32 main.cpp ${EXTRA_SOURCES})
+else ()
+    add_executable(AudioAnalyzer main.cpp ${EXTRA_SOURCES})
+endif ()
  target_link_libraries(AudioAnalyzer
  PRIVATE ${EXTRA_LIBS})

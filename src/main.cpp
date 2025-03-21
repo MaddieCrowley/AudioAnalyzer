@@ -7,6 +7,7 @@
 #endif
 
 #ifdef SDL3
+#define SDL_MAIN_HANDLED
 #include "gui/sdl.h"
 #elifdef X11
 #include "gui/xwin.h"
@@ -31,6 +32,7 @@ int main (int argc, char *argv[]) {
     gui winXY(gui::XY, 1440/3, 1440/3,
              "XY 10 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
     while (!winLRS.gDone&&!winLRM.gDone&&!winXY.gDone&&!winLong.gDone) {
+
 #ifdef TIMING_DEBUG
         uint32_t start = SDL_GetTicks();
 #endif
@@ -42,7 +44,7 @@ int main (int argc, char *argv[]) {
         winXY.loop();
         winLRS.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum));
         //BUG Still some glitching, most visible when going from playing to pause
-        winLRM.changeDataPtr(audiodata::data+SMALL_BUFFER*AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum/SMALL_BUFFER));
+        winLRM.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum/SMALL_BUFFER)*SMALL_BUFFER);
         winXY.changeDataPtr(audiodata::data+SMALL_BUFFER*AUDIO_CHANNELS*AUDIO_SIZE*(audiodata::frameNum/SMALL_BUFFER));
         winLong.loop();
 #ifdef TIMING_DEBUG
