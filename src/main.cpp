@@ -12,7 +12,7 @@
 #elifdef X11
 #include "gui/xwin.h"
 #endif
-#define SMALL_BUFFER 10
+#define SMALL_BUFFER 25
 
 //TODO parallel audio sample taking and window drawing to minimize the number of audio frames dropped
 //TODO Check that for every frame there is one audio sample
@@ -21,7 +21,7 @@ int main (int argc, char *argv[]) {
 #ifdef CORRECT_SHORT_BUFFER_WRAP
     int16_t tempData[SMALL_BUFFER*AUDIO_SIZE*AUDIO_CHANNELS];
 #endif
-    audio a;
+    audio a(SMALL_BUFFER);
     gui winLRS(gui::LR, 1920, 1440/3,
               "LR",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE);
     gui winLRM(gui::LR, 1920, 1440/3,
@@ -29,7 +29,7 @@ int main (int argc, char *argv[]) {
     // gui winR(gui::R, 1920, 1440/3,
     //          "R 4 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
     gui winLong(gui::All, 1920, 1440/3,
-    "Full buffer",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*BUFFER_SIZE,10);
+                "Full buffer",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*BUFFER_SIZE,10);
     gui winXY(gui::XY, 1440/3, 1440/3,
              "XY 10 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
     while (!winLRS.gDone&&!winLRM.gDone&&!winXY.gDone&&!winLong.gDone) {
@@ -41,14 +41,30 @@ int main (int argc, char *argv[]) {
         a.read();
 #endif
         //BUG Still some glitching, most visible when going from playing to pause
-        //DUE TO RENDERING AND AUDIO SAMPLING NOT BEING TIED TOGETHER ???
+        // !! DUE TO RENDERING AND AUDIO SAMPLING NOT BEING TIED TOGETHER ???
         //BUG need to fix rendering previous frames not future ones
-        winLRM.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*((audiodata::frameNum-(SMALL_BUFFER))/SMALL_BUFFER*SMALL_BUFFER));
-        winXY.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*((audiodata::frameNum)/SMALL_BUFFER*SMALL_BUFFER));
-        winLRS.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum));
+
+        // winXY.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*((audiodata::frameNum)/SMALL_BUFFER*SMALL_BUFFER));
         winLRS.loop();
+        winLRS.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum));
+        //winLRM.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*((audiodata::frameNum-SMALL_BUFFER)/SMALL_BUFFER*SMALL_BUFFER));
+        // if (audiodata::frameNum==0) {
+        //     memcpy(tempData,
+        //            &audiodata::data[BUFFER_SIZE*AUDIO_SIZE*AUDIO_CHANNELS-(SMALL_BUFFER-1)*AUDIO_CHANNELS*AUDIO_SIZE],
+        //            (SMALL_BUFFER-1)*AUDIO_CHANNELS*AUDIO_SIZE*sizeof(int16_t));
+        //
+        //     winLRM.changeDataPtr(tempData);
+        // }
+        // else
+            winLRM.changeDataPtr(audiodata::data+
+                                 (AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER*
+                                  ((audiodata::frameNum)/SMALL_BUFFER)));
         winLRM.loop();
-        winXY.loop();
+        // if (audiodata::frameNum%SMALL_BUFFER==0) {
+        //     winXY.loop();
+        //  //   winXY.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum);
+        //     winLRM.changeDataPtr(audiodata::data+AUDIO_SIZE*AUDIO_CHANNELS*audiodata::frameNum);
+        // }
         SDL_Delay(5);
         // if (audiodata::frameNum==0) {
         //

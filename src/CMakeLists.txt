@@ -8,9 +8,9 @@ set(CMAKE_VERBOSE_MAKEFILE TRUE)
 
  set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-add_compile_options(-Dmain=SDL_main)
 
 IF(WIN32)
+    add_compile_options(-Dmain=SDL_main)
     set(SDL3_DIR "C:/msys64/ucrt64/lib/cmake/SDL3")
     set(SDL3_HINT "C:/msys64/ucrt64/include/SDL3")
     set(RT_DIR "c:/msys64/ucrt64/include/rtaudio/")

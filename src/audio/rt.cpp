@@ -1,8 +1,8 @@
 #include "rt.h"
 #define uint unsigned int
-audio::audio()
-{
-    audiodata::frameNum=0;
+audio::audio(int initFrame)
+{;
+    audiodata::frameNum=initFrame;
     params.deviceId = adc.getDefaultOutputDevice();
     params.nChannels = AUDIO_CHANNELS;
     params.firstChannel = 0;
@@ -11,6 +11,7 @@ audio::audio()
     adc.openStream(NULL,&params, RTAUDIO_SINT16,
                    sampleRate,&bufferFrames,&audiodata::read);
     adc.startStream();
+
 }
 
 audio::~audio() {

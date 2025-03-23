@@ -143,7 +143,7 @@ void gui::drawXY(SDL_Rect&region,SDL_Point&start) { //Draws from member local po
 }
 
 void gui::drawLineL(SDL_Rect&region,SDL_Point&start) {
-    for (int i = m_stepSize; i < dataSize/2; i+=m_stepSize) {
+    for (int i = m_stepSize; i < (dataSize/2); i+=m_stepSize) {
         SDL_RenderLine(gSDLRenderer,
             scale(i-m_stepSize,start.x,region.w,dataSize/2),
             scale(data[2*(i-m_stepSize)],start.y,region.h,2*INT16_MAX),
@@ -167,14 +167,27 @@ void gui::changeDataPtr(int16_t*dataNew) {
 
     //TODO FINISH This mess
 
-    if (dataSize>AUDIO_SIZE*AUDIO_CHANNELS) {
-        const int end = dataSize-1;
-        memcpy(data,data+AUDIO_SIZE*AUDIO_CHANNELS,(dataSize-AUDIO_SIZE*AUDIO_CHANNELS)*sizeof(int16_t));
-        memcpy(data+end-AUDIO_CHANNELS*AUDIO_SIZE,dataNew,AUDIO_SIZE*AUDIO_CHANNELS*sizeof(int16_t));
-    }
-    else {
+    // if (dataNew<data&&dataSize>AUDIO_SIZE*AUDIO_CHANNELS) {
+    //     memcpy(&data[0],&data[AUDIO_SIZE*AUDIO_CHANNELS],
+    //         (dataSize-AUDIO_SIZE*AUDIO_CHANNELS)*sizeof(int16_t));
+    //     memcpy(&data[(dataSize-AUDIO_CHANNELS*AUDIO_SIZE)],dataNew,
+    //         AUDIO_CHANNELS*AUDIO_SIZE*sizeof(int16_t));
+
+        // const int end = dataSize;
+
+        // memcpy(&data[0],&data[end-(dataSize-AUDIO_SIZE*AUDIO_CHANNELS)],(dataSize-AUDIO_SIZE*AUDIO_CHANNELS)*sizeof(int16_t));
+        // memcpy(&data[end],dataNew,AUDIO_SIZE*AUDIO_CHANNELS*sizeof(int16_t));
+        // data = dataNew;
+
+    // const int end = dataSize-1;
+    // memcpy(data,data+AUDIO_SIZE*AUDIO_CHANNELS,(dataSize-AUDIO_SIZE*AUDIO_CHANNELS)*sizeof(int16_t));
+    // memcpy(data+end-AUDIO_CHANNELS*AUDIO_SIZE,dataNew,AUDIO_SIZE*AUDIO_CHANNELS*sizeof(int16_t));
+    // }
+    // if (dataNew<data&&dataSize>AUDIO_SIZE*AUDIO_CHANNELS) {
+    // }
+    // else {
         data=dataNew;
-    }
+    // }
 }
 //TODO instead of calculating length/max every time, calculate once and multiply (faster?)
 // INLINE FASTER?

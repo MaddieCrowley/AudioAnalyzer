@@ -12,7 +12,7 @@ private:
   RtAudio adc;
   RtAudio::StreamParameters params;
 public:
-    audio();
+    audio(int initFrame);
     ~audio();
 };
 namespace audiodata
