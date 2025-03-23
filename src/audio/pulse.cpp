@@ -1,5 +1,5 @@
 #include "pulse.h"
-
+//TODO add documentation
 audio::audio()
 {
     ss.format = PA_SAMPLE_S16NE;

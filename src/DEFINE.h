@@ -13,5 +13,5 @@
 #define AUDIO_SAMPLE_RATE 192000
 #endif
 #define AUDIO_CHANNELS 2
-#define BUFFER_SIZE 100
+#define BUFFER_SIZE 5000
 #endif //DEFINE_H

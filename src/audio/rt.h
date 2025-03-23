@@ -8,11 +8,10 @@
 #include <rtaudio/RtAudio.h>
 class audio
 {
-private:
   RtAudio adc;
   RtAudio::StreamParameters params;
 public:
-    audio(int initFrame);
+    explicit audio(int initFrame);
     ~audio();
 };
 namespace audiodata
@@ -20,6 +19,6 @@ namespace audiodata
     inline int frameNum;
     int read(void*outputBuffer, void* inputBuffer, unsigned int nBufferFrames,
                   double streamTime,RtAudioStreamStatus status,void*userData);
-    inline int16_t data[AUDIO_SIZE*BUFFER_SIZE*AUDIO_CHANNELS];
+    inline int16_t data[AUDIO_SIZE*(BUFFER_SIZE+1)*AUDIO_CHANNELS];
 }
 #endif //RT_H

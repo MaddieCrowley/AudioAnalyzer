@@ -1,7 +1,5 @@
 #ifdef RTAUDIO_SUPPORT_ENABLE
 #include "audio/rt.h"
-//#define a.audiodata() audiodata::audiodata()
-
 #elifdef PULSEAUDIO_SUPPORT_ENABLE
 #include "audio/pulse.h"
 #endif
@@ -12,27 +10,33 @@
 #elifdef X11
 #include "gui/xwin.h"
 #endif
-#define SMALL_BUFFER 25
+#define SMALL_BUFFER 5
+#define STRING(s) #s
+#define TOSTRING(s) STRING(s)
 
-//TODO parallel audio sample taking and window drawing to minimize the number of audio frames dropped
-//TODO Check that for every frame there is one audio sample
+std::string lr = "LR ";
+std::string xy = "XY ";
+std::string frame = " Frames";
+std::string buff = TOSTRING(SMALL_BUFFER);
+//TODO Work on README.md
+// work on non stationary sub-buffer implementation
+// add generic sdl gui class and generic window type class (maybe)
+// add FFT with KISS_FFT
+// add RtAudio file to 3rdParty folder
+// continue on documentation
+// add ability to change device
+// add ability to change small buffer size (maybe) (would require updating dataSize gui class)
 int main (int argc, char *argv[]) {
-    int16_t tempData[SMALL_BUFFER*AUDIO_SIZE*AUDIO_CHANNELS]={};
-#ifdef CORRECT_SHORT_BUFFER_WRAP
-    int16_t tempData[SMALL_BUFFER*AUDIO_SIZE*AUDIO_CHANNELS];
-#endif
     audio a(SMALL_BUFFER);
     gui winLRS(gui::LR, 1920, 1440/3,
               "LR",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE);
     gui winLRM(gui::LR, 1920, 1440/3,
-             "LR 10 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
-    // gui winR(gui::R, 1920, 1440/3,
-    //          "R 4 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
-    gui winLong(gui::All, 1920, 1440/3,
-                "Full buffer",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*BUFFER_SIZE,10);
+             (lr+buff+frame).c_str(),audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
+    gui winLong(gui::LR, 1920, 1440/3,
+                "Full buffer",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*BUFFER_SIZE,250);
     gui winXY(gui::XY, 1440/3, 1440/3,
-             "XY 10 Frames",audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
-    while (!winLRS.gDone&&!winLRM.gDone&&!winXY.gDone&&!winLong.gDone) {
+             (xy+buff+frame).c_str(),audiodata::data,AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER);
+    while (!winLRS.gDone&&!winLRM.gDone&&!winLong.gDone&&!winXY.gDone) {
 
 #ifdef TIMING_DEBUG
         uint32_t start = SDL_GetTicks();
@@ -40,51 +44,44 @@ int main (int argc, char *argv[]) {
 #ifdef PULSEAUDIO_SUPPORT_ENABLE
         a.read();
 #endif
-        //BUG Still some glitching, most visible when going from playing to pause
-        // !! DUE TO RENDERING AND AUDIO SAMPLING NOT BEING TIED TOGETHER ???
-        //BUG need to fix rendering previous frames not future ones
-
-        // winXY.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*((audiodata::frameNum)/SMALL_BUFFER*SMALL_BUFFER));
         winLRS.loop();
         winLRS.changeDataPtr(audiodata::data+(AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum));
-        //winLRM.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*((audiodata::frameNum-SMALL_BUFFER)/SMALL_BUFFER*SMALL_BUFFER));
-        // if (audiodata::frameNum==0) {
-        //     memcpy(tempData,
-        //            &audiodata::data[BUFFER_SIZE*AUDIO_SIZE*AUDIO_CHANNELS-(SMALL_BUFFER-1)*AUDIO_CHANNELS*AUDIO_SIZE],
-        //            (SMALL_BUFFER-1)*AUDIO_CHANNELS*AUDIO_SIZE*sizeof(int16_t));
-        //
-        //     winLRM.changeDataPtr(tempData);
-        // }
-        // else
-            winLRM.changeDataPtr(audiodata::data+
-                                 (AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER*
-                                  ((audiodata::frameNum)/SMALL_BUFFER)));
-        winLRM.loop();
-        // if (audiodata::frameNum%SMALL_BUFFER==0) {
-        //     winXY.loop();
-        //  //   winXY.changeDataPtr(audiodata::data+AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum);
-        //     winLRM.changeDataPtr(audiodata::data+AUDIO_SIZE*AUDIO_CHANNELS*audiodata::frameNum);
-        // }
-        SDL_Delay(5);
-        // if (audiodata::frameNum==0) {
-        //
-        //     memcpy(tempData,&audiodata::data[AUDIO_CHANNELS*AUDIO_SIZE*BUFFER_SIZE]-AUDIO_CHANNELS*AUDIO_SIZE*(SMALL_BUFFER-1),
-        //         AUDIO_SIZE*AUDIO_CHANNELS*(SMALL_BUFFER-1)*sizeof(int16_t));
-        //     memcpy(&tempData[AUDIO_CHANNELS*AUDIO_SIZE*(SMALL_BUFFER-1)],&audiodata::data[0],
-        //         AUDIO_SIZE*AUDIO_CHANNELS*sizeof(int16_t));
-        //     winLRM.changeDataPtr(tempData);
-        //     winXY.changeDataPtr(tempData);
-        //     //winLRM.changeDataPtr(audiodata::data);
-        // }
-        // else {
-        // }
 
+#ifdef NON_STATIONARY_BUFFER
+        //TODO work on this
+        winLRM.changeDataPtr(audiodata::data+
+                             (AUDIO_CHANNELS*AUDIO_SIZE*audiodata::frameNum)
+                             *(audiodata::frameNum<(BUFFER_SIZE-SMALL_BUFFER)&&audiodata::frameNum>SMALL_BUFFER)
+        );
+#else
+
+        /***
+     *Branchless pointer change
+     *current data which is appended to end of main buffer when frameNum == BUFFER_SIZE
+     *TODO add option for SMALL_BUFFER sized view of previous frames (ifdef option probably)
+     * shorten code below (probably add inline function to clean up)
+     ***/
+        winLRM.changeDataPtr(audiodata::data+
+                             AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER*((audiodata::frameNum-SMALL_BUFFER)/SMALL_BUFFER)
+                             *(audiodata::frameNum>SMALL_BUFFER)
+                             +AUDIO_CHANNELS*AUDIO_SIZE*(BUFFER_SIZE-SMALL_BUFFER)
+                             *(audiodata::frameNum<SMALL_BUFFER)
+        );
+        winXY.changeDataPtr(audiodata::data+
+                            AUDIO_CHANNELS*AUDIO_SIZE*SMALL_BUFFER*((audiodata::frameNum-SMALL_BUFFER)/SMALL_BUFFER)
+                            *(audiodata::frameNum>SMALL_BUFFER)
+                            +AUDIO_CHANNELS*AUDIO_SIZE*(BUFFER_SIZE-SMALL_BUFFER)
+                            *(audiodata::frameNum<SMALL_BUFFER)
+        );
+#endif
+        winLRM.loop();
+        winXY.loop();
         winLong.loop();
+        SDL_Delay(7);
 #ifdef TIMING_DEBUG
         uint32_t end = SDL_GetTicks();
         float delta = (float)(end-start);
         std::cout << float(delta) << "\n";
-
 #endif
     }
     return 0;
