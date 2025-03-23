@@ -77,7 +77,7 @@ int main (int argc, char *argv[]) {
         winLRM.loop();
         winXY.loop();
         winLong.loop();
-        SDL_Delay(7);
+        SDL_Delay(15); //Anything from 5 to 25 works nicely, higher = lower cpu usage, 15 is a nice value
 #ifdef TIMING_DEBUG
         uint32_t end = SDL_GetTicks();
         float delta = (float)(end-start);
